@@ -210,3 +210,6 @@ __marimo__/
 snowflake.yml
 .streamlit/secrets.toml
 output/
+
+# Local files
+demo_plan.md
