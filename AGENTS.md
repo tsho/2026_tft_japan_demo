@@ -204,6 +204,62 @@ query_warehouse: <YOUR_WAREHOUSE>
 
 ---
 
+## 12. GitHub Actions: push と pull_request の重複実行を避ける
+
+**問題:** ワークフローのトリガーに `push: branches: [main, "feature/**"]` と `pull_request:` を両方設定すると、PR作成時に push トリガーと pull_request トリガーの2つが同時に走り、CIが二重実行される。
+
+**対処:** lint チェック等のCIは `pull_request` のみで十分。push トリガーは不要なら削除する。
+```yaml
+on:
+  pull_request:
+```
+
+---
+
+## 13. .gitignore に入れたファイルのコミット管理
+
+**問題:** `.gitignore` に登録したファイルを後からコミットしたくなった場合、`git add` しても無視される。`.gitignore` の変更と `git add` の順序を意識しないと混乱する。
+
+**対処:**
+- コミットしたいファイルは先に `.gitignore` から外してから `git add` する
+- `git add -f` で強制追加する方法もあるが、`.gitignore` と実態が乖離するので非推奨
+- プロジェクト開始時にコミット対象を明確に決めておく
+
+---
+
+## 14. ruff: lint だけでなく format も最初から通す
+
+**問題:** `ruff check`（lint）はパスしても `ruff format --check`（フォーマット）で差分が出ることがある。CIで両方チェックしないと、ローカルでは気づかない。
+
+**対処:** lint と format は常にセットで実行する。
+```bash
+uv run ruff check .
+uv run ruff format --check .
+```
+
+GitHub Actions でも両方チェックする。
+```yaml
+- uses: astral-sh/ruff-action@v3
+  with:
+    args: check
+- uses: astral-sh/ruff-action@v3
+  with:
+    args: format --check
+```
+
+---
+
+## 15. SiSデプロイ前: ローカルファイルの存在確認を必ず行う
+
+**問題:** Snowflake上のアプリを削除した後、ローカルのソースファイルも削除されていることに気づかず `snow streamlit deploy` を実行すると、「ソースが見つからない」エラーになる。CLIの出力だけでは成功したように見えることもある。
+
+**対処:** デプロイ前のチェック手順:
+1. `snowflake.yml` の `artifacts` に列挙されたファイルがローカルに存在するか確認
+2. デプロイ実行
+3. `SHOW STREAMLITS IN SCHEMA ...;` で実際にオブジェクトが作られたか確認
+
+---
+
 ## チェックリスト: SiSデプロイ前の確認事項
 
 - [ ] `get_active_session()` でセッション取得しているか
