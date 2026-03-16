@@ -1,8 +1,8 @@
-"""月次売上トレンド ダッシュボード - カテゴリ別可視化"""
+"""月次売上トレンド ダッシュボード - カテゴリ別可視化."""
 
+import altair as alt
 import pandas as pd
 import streamlit as st
-import altair as alt
 
 st.set_page_config(
     page_title="月次売上トレンド",
@@ -31,6 +31,7 @@ ORDER BY SALE_DATE
 @st.cache_data(ttl=600, show_spinner="Snowflakeからデータを読み込み中...")
 def load_data() -> pd.DataFrame:
     import os
+
     import snowflake.connector
 
     token = os.environ.get("SNOWFLAKE_TOKEN")
@@ -111,9 +112,7 @@ with st.container(horizontal=True):
 # =============================================================================
 
 monthly_by_cat = (
-    filtered.groupby([pd.Grouper(key="sale_date", freq="MS"), "product_category"])["sales_amount"]
-    .sum()
-    .reset_index()
+    filtered.groupby([pd.Grouper(key="sale_date", freq="MS"), "product_category"])["sales_amount"].sum().reset_index()
 )
 
 st.markdown("### カテゴリ別 月次売上トレンド")
@@ -168,9 +167,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     monthly_by_region = (
-        filtered.groupby([pd.Grouper(key="sale_date", freq="MS"), "region"])["sales_amount"]
-        .sum()
-        .reset_index()
+        filtered.groupby([pd.Grouper(key="sale_date", freq="MS"), "region"])["sales_amount"].sum().reset_index()
     )
     region_chart = (
         alt.Chart(monthly_by_region)
@@ -192,11 +189,7 @@ with col1:
         st.altair_chart(region_chart, use_container_width=True)
 
 with col2:
-    cat_by_region = (
-        filtered.groupby(["region", "product_category"])["sales_amount"]
-        .sum()
-        .reset_index()
-    )
+    cat_by_region = filtered.groupby(["region", "product_category"])["sales_amount"].sum().reset_index()
     bar_chart = (
         alt.Chart(cat_by_region)
         .mark_bar()
@@ -222,13 +215,12 @@ with col2:
 # =============================================================================
 
 with st.expander("詳細データを表示"):
-    display_df = (
-        monthly_by_cat.copy()
-        .rename(columns={
+    display_df = monthly_by_cat.copy().rename(
+        columns={
             "sale_date": "月",
             "product_category": "カテゴリ",
             "sales_amount": "売上",
-        })
+        }
     )
     display_df["月"] = display_df["月"].dt.strftime("%Y年%m月")
     st.dataframe(
