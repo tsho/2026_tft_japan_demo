@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Snowflake
+snowflake.yml
+.streamlit/secrets.toml
+output/
