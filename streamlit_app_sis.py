@@ -124,6 +124,55 @@ line_chart = (
 st.altair_chart(line_chart, use_container_width=True)
 
 # =============================================================================
+# TOP N Sales Ranking
+# =============================================================================
+
+st.subheader(":trophy: 月×カテゴリ×地域 売上ランキング")
+
+top_n = st.slider("表示件数", min_value=5, max_value=30, value=10, step=5)
+
+top_df = (
+    filtered.groupby(["sale_date", "product_category", "region"])["sales_amount"]
+    .sum()
+    .reset_index()
+    .nlargest(top_n, "sales_amount")
+    .reset_index(drop=True)
+)
+top_df["rank"] = range(1, len(top_df) + 1)
+top_df["label"] = (
+    top_df["sale_date"].dt.strftime("%Y-%m")
+    + " / " + top_df["region"]
+    + " / " + top_df["product_category"]
+)
+
+col_chart, col_table = st.columns([3, 2])
+
+with col_chart:
+    rank_chart = (
+        alt.Chart(top_df)
+        .mark_bar()
+        .encode(
+            x=alt.X("sales_amount:Q", title="売上 (¥)", axis=alt.Axis(format="~s")),
+            y=alt.Y("label:N", title=None, sort="-x"),
+            color=alt.Color("product_category:N", title="カテゴリ"),
+            tooltip=[
+                alt.Tooltip("sale_date:T", title="月", format="%Y-%m"),
+                alt.Tooltip("region:N", title="地域"),
+                alt.Tooltip("product_category:N", title="カテゴリ"),
+                alt.Tooltip("sales_amount:Q", title="売上", format=",.0f"),
+            ],
+        )
+        .properties(height=max(top_n * 30, 200))
+    )
+    st.altair_chart(rank_chart, use_container_width=True)
+
+with col_table:
+    table_df = top_df[["rank", "sale_date", "product_category", "region", "sales_amount"]].copy()
+    table_df["sale_date"] = table_df["sale_date"].dt.strftime("%Y-%m")
+    table_df.columns = ["順位", "月", "カテゴリ", "地域", "売上"]
+    st.dataframe(table_df.set_index("順位"))
+
+# =============================================================================
 # Area Chart - Stacked by Category
 # =============================================================================
 
