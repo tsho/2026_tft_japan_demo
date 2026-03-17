@@ -75,3 +75,51 @@ Streamlit in Snowflake (SiS) にデプロイ可能な月次売上ダッシュボ
 - layout="wide"
 - @st.cache_data(ttl=600) でデータキャッシュ
 ````
+
+# デモ用プロンプト
+
+## プロンプト1
+```
+TSHO_DB.TFT_DEMO_2026.MONTHLY_SALES カテゴリごとに集計して、売上金額TOP5を表示してください
+```
+
+## プロンプト2
+```
+TSHO_DB.TFT_DEMO_2026.MONTHLY_SALES テーブルを使って、
+Streamlit in Snowflake (SiS) にデプロイ可能な月次売上ダッシュボードを作成して、デプロイしてください。
+
+### テーブル定義
+- SALE_DATE (DATE)
+- PRODUCT_CATEGORY (VARCHAR)
+- REGION (VARCHAR)
+- SALES_AMOUNT (NUMBER)
+- UNITS_SOLD (NUMBER)
+- CUSTOMER_COUNT (NUMBER)
+
+### SiS制約（必ず守ること）
+- 認証は `from snowflake.snowpark.context import get_active_session` を使う（st.connection は不可）
+- Altair v4 互換にする（xOffset 不可、column ファセットで代替）
+- 以下の Streamlit API は使わない:
+  - st.metric(border=True)
+  - st.container(horizontal=True)
+  - :material/ アイコン（emoji で代替）
+  - st.dataframe(hide_index=True)（df.set_index() で代替）
+  - st.cache_data(show_spinner="...")（show_spinner 引数なしで使う）
+- get_active_session() の直後にウェアハウスを明示的に設定してください
+
+### ダッシュボード構成（上から順に）
+1. サイドバーフィルター: 地域（multiselect）、カテゴリ（multiselect）、年（range slider）
+2. KPI行: 総売上(¥)、総販売数量、総顧客数、データ月数 を st.columns(4) で横並び
+3. カテゴリ別 月次売上トレンド: Altair 折れ線グラフ（point付き、tooltip に月・カテゴリ・売上）
+4. TOP N 売上ランキング: スライダーで件数選択(5〜30)、月×カテゴリ×地域で集計した売上上位を横棒グラフ（左3:右2で棒グラフとテーブルを並べる）
+5. カテゴリ別 積み上げエリアチャート
+6. 地域×カテゴリ比較: 左に地域別トレンド折れ線、右に地域ごとのカテゴリ別棒グラフ（column ファセット使用）
+7. 詳細データテーブル: st.expander で折りたたみ
+
+### コード品質
+- ruff で Google Python Style Guide に準拠（docstring は "." で終わる、import はソート済み）
+- UIラベルは日本語
+- layout="wide"
+- @st.cache_data(ttl=600) でデータキャッシュ
+```
+
