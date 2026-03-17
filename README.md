@@ -1,5 +1,8 @@
-# 2026_tft_japan_demo
-2026 Tech Fast Track のデモコードです
+# Tech Fast Track 2026 - Japan Closing Keynote Demo
+
+[Snowflake Tech Fast Track](https://www.snowflake.com/snowflake-tech-fast-track/?utm_source=d4brdrct) のデモコードです。Cortex Code を使って月次売上データの分析ダッシュボードを Streamlit in Snowflake (SiS) にデプロイする一連の流れを紹介します。
+
+Demo code for [Snowflake Tech Fast Track](https://www.snowflake.com/snowflake-tech-fast-track/?utm_source=d4brdrct). This repository demonstrates an end-to-end workflow of building and deploying a monthly sales analytics dashboard to Streamlit in Snowflake (SiS) using Cortex Code.
 
 ## セットアップ
 
@@ -25,7 +28,7 @@ cp snowflake.yml.example snowflake.yml
 
 > **注意:** `snowflake.yml` は `.gitignore` に登録されており、リポジトリにはコミットされません。
 
-### 3. SiS デプロイ
+### 3. SiS deploy
 
 ```bash
 snow streamlit deploy --replace --database <YOUR_DATABASE> --schema <YOUR_SCHEMA>
